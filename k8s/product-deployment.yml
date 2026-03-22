@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productservice
+  namespace: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: productservice
+  template:
+    metadata:
+      labels:
+        component: productservice
+    spec:
+      containers:
+        - name: productservice
+          image: 975050024946.dkr.ecr.us-east-1.amazonaws.com/jsree-productservice:product
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3001
+
+          env:
+            - name: CLIENT_URLS
+              value: "http://productservice:3001"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

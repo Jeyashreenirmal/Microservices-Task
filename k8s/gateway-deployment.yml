@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatewayservice
+  namespace: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: gatewayservice
+  template:
+    metadata:
+      labels:
+        component: gatewayservice
+    spec:
+      containers:
+        - name: gatewayservice
+          image: 975050024946.dkr.ecr.us-east-1.amazonaws.com/jsree-gatewayservice:gateway
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3003
+
+          env:
+            - name: CLIENT_URLS
+              value: "http://gatewayservice:3003"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

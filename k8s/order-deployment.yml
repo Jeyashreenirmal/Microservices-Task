@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+  namespace: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: orderservice
+  template:
+    metadata:
+      labels:
+        component: orderservice
+    spec:
+      containers:
+        - name: orderservice
+          image: 975050024946.dkr.ecr.us-east-1.amazonaws.com/jsree-orderservice:order
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3002
+
+          env:
+            - name: CLIENT_URLS
+              value: "http://orderservice:3002"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
